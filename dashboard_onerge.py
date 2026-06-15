@@ -189,7 +189,7 @@ with tab1:
     fig_tree.update_layout(height=400)
     st.plotly_chart(fig_tree, use_container_width=True)
 
-
+# ── TAB 2: il Analiz ───────────────────────────────────────
 st.subheader("🗺️ Türkiye İl Bazında Önerge Haritası")
 
     # Önce il seç

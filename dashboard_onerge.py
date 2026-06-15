@@ -190,7 +190,8 @@ with tab1:
     st.plotly_chart(fig_tree, use_container_width=True)
 
 # ── TAB 2: il Analiz ───────────────────────────────────────
-st.subheader("🗺️ Türkiye İl Bazında Önerge Haritası")
+with tab2:   
+    st.subheader("🗺️ Türkiye İl Bazında Önerge Haritası")
 
     # Önce il seç
     secili_il = st.selectbox(

@@ -194,6 +194,22 @@ with tab1:
 with tab2:
     st.subheader("🗺️ Türkiye İl Bazında Önerge Haritası")
 
+    st.markdown("---")
+    st.subheader("İl Seç — Milletvekillerini Gör")
+    secili_il = st.selectbox(
+        "Bir il seç:", 
+        [""] + sorted(il_map["il"].tolist()),
+        key="harita_il"
+    )
+    if secili_il:
+        mv_il = mv_pd[mv_pd["il"] == secili_il].sort_values("count", ascending=False)
+        st.success(f"{secili_il} — {len(mv_il)} milletvekili, toplam {mv_il['count'].sum():,} önerge")
+        st.dataframe(
+            mv_il.rename(columns={"onerge_sahibi": "Milletvekili", 
+                                   "il": "İl", "count": "Önerge Sayısı"}),
+            use_container_width=True
+        )
+
     # Koordinat eşleştir
     il_map = il_pd.copy()
     il_map["lat"] = il_map["il"].map(lambda x: IL_KOORDINAT.get(x, (None, None))[0])

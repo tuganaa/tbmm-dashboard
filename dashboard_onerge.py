@@ -198,7 +198,7 @@ with tab2:
     st.subheader("İl Seç — Milletvekillerini Gör")
     secili_il = st.selectbox(
     "Bir il seç:", 
-    [""] + sorted(il_pd["il"].tolist()),
+    [""] + sorted(mv_pd["il"].tolist()),
         key="harita_il"
     )
     if secili_il:

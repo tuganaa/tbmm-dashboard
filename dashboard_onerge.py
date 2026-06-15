@@ -190,31 +190,30 @@ with tab1:
     st.plotly_chart(fig_tree, use_container_width=True)
 
 
-# ── TAB 2: Harita ─────────────────────────────────────────────
-with tab2:
-    st.subheader("🗺️ Türkiye İl Bazında Önerge Haritası")
+st.subheader("🗺️ Türkiye İl Bazında Önerge Haritası")
 
-    st.markdown("---")
-    st.subheader("İl Seç — Milletvekillerini Gör")
+    # Önce il seç
     secili_il = st.selectbox(
-    "Bir il seç:", 
-    [""] + sorted(mv_pd["il"].dropna().unique().tolist()),
+        "İl seç (haritayı yakınlaştırır):",
+        ["Tümü"] + sorted(mv_pd["il"].dropna().unique().tolist()),
         key="harita_il"
     )
-    if secili_il:
-        mv_il = mv_pd[mv_pd["il"] == secili_il].sort_values("count", ascending=False)
-        st.success(f"{secili_il} — {len(mv_il)} milletvekili, toplam {mv_il['count'].sum():,} önerge")
-        st.dataframe(
-            mv_il.rename(columns={"onerge_sahibi": "Milletvekili", 
-                                   "il": "İl", "count": "Önerge Sayısı"}),
-            use_container_width=True
-        )
 
     # Koordinat eşleştir
     il_map = il_pd.copy()
     il_map["lat"] = il_map["il"].map(lambda x: IL_KOORDINAT.get(x, (None, None))[0])
     il_map["lon"] = il_map["il"].map(lambda x: IL_KOORDINAT.get(x, (None, None))[1])
     il_map = il_map.dropna(subset=["lat", "lon"])
+
+    # Harita merkezi
+    if secili_il != "Tümü" and secili_il in IL_KOORDINAT:
+        map_lat = IL_KOORDINAT[secili_il][0]
+        map_lon = IL_KOORDINAT[secili_il][1]
+        map_scale = 10
+    else:
+        map_lat = 39
+        map_lon = 35
+        map_scale = 4
 
     fig_map = px.scatter_geo(
         il_map,
@@ -231,8 +230,8 @@ with tab2:
     )
     fig_map.update_geos(
         scope="europe",
-        center={"lat": 39, "lon": 35},
-        projection_scale=4,
+        center={"lat": map_lat, "lon": map_lon},
+        projection_scale=map_scale,
         showland=True,
         landcolor="lightgray",
         showocean=True,
@@ -243,26 +242,57 @@ with tab2:
     fig_map.update_layout(height=600, coloraxis_colorbar_title="Önerge")
     st.plotly_chart(fig_map, use_container_width=True)
 
-    st.subheader("İl Sıralaması")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.dataframe(
-            il_map.head(20)[["il", "count"]].rename(
-                columns={"il": "İl", "count": "Önerge Sayısı"}
-            ).reset_index(drop=True),
-            use_container_width=True,
-            height=400
-        )
-    with col_b:
-        fig_pie = px.pie(
-            il_pd.head(10),
-            names="il",
-            values="count",
-            title="Top 10 İl Dağılımı",
-            hole=0.4
-        )
-        fig_pie.update_layout(height=400)
-        st.plotly_chart(fig_pie, use_container_width=True)
+    # Seçili il milletvekilleri
+    if secili_il != "Tümü":
+        st.markdown("---")
+        mv_il = mv_pd[mv_pd["il"] == secili_il].sort_values("count", ascending=False)
+        st.success(f"{secili_il} — {len(mv_il)} milletvekili, toplam {mv_il['count'].sum():,} önerge")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.dataframe(
+                mv_il.rename(columns={"onerge_sahibi": "Milletvekili",
+                                       "il": "İl", "count": "Önerge Sayısı"}),
+                use_container_width=True
+            )
+        with col_b:
+            fig_il_mv = px.bar(
+                mv_il.head(10),
+                x="count", y="onerge_sahibi",
+                orientation="h",
+                color="count",
+                color_continuous_scale="Reds",
+                labels={"count": "Önerge Sayısı", "onerge_sahibi": ""},
+                text="count"
+            )
+            fig_il_mv.update_traces(textposition="outside")
+            fig_il_mv.update_layout(
+                showlegend=False,
+                coloraxis_showscale=False,
+                yaxis={"categoryorder": "total ascending"},
+                height=400
+            )
+            st.plotly_chart(fig_il_mv, use_container_width=True)
+    else:
+        st.subheader("İl Sıralaması")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.dataframe(
+                il_map.head(20)[["il", "count"]].rename(
+                    columns={"il": "İl", "count": "Önerge Sayısı"}
+                ).reset_index(drop=True),
+                use_container_width=True,
+                height=400
+            )
+        with col_b:
+            fig_pie = px.pie(
+                il_pd.head(10),
+                names="il",
+                values="count",
+                title="Top 10 İl Dağılımı",
+                hole=0.4
+            )
+            fig_pie.update_layout(height=400)
+            st.plotly_chart(fig_pie, use_container_width=True)
 
 
 # ── TAB 3: Arama ─────────────────────────────────────────────

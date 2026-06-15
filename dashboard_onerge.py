@@ -197,8 +197,8 @@ with tab2:
     st.markdown("---")
     st.subheader("İl Seç — Milletvekillerini Gör")
     secili_il = st.selectbox(
-        "Bir il seç:", 
-        [""] + sorted(il_map["il"].tolist()),
+    "Bir il seç:", 
+    [""] + sorted(il_pd["il"].tolist()),
         key="harita_il"
     )
     if secili_il:
